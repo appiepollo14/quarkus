@@ -55,10 +55,25 @@ public interface SecurityContextConfig {
      */
     Optional<PodFSGroupChangePolicy> fsGroupChangePolicy();
 
+    /**
+     * Controls whether a process can gain more privileges than its parent process.
+     * This bool directly controls whether the no_new_privs flag gets set on the container process.
+     * allowPrivilegeEscalation is always true when the container:
+     * - is run as privileged, or
+     * - has CAP_SYS_ADMIN
+     */
+    Optional<Boolean> allowPrivilegeEscalation();
+
+    /**
+     * Mounts the container's root filesystem as read-only
+     */
+    Optional<Boolean> readOnlyRootFilesystem();
+
     default boolean isAnyPropertySet() {
         return seLinuxOptions().isAnyPropertySet() || windowsOptions().isAnyPropertySet() || runAsUser().isPresent()
                 || runAsGroup().isPresent() || runAsNonRoot().isPresent() || supplementalGroups().isPresent()
-                || fsGroup().isPresent() || !sysctls().isEmpty() || fsGroupChangePolicy().isPresent();
+                || fsGroup().isPresent() || !sysctls().isEmpty() || fsGroupChangePolicy().isPresent()
+                || allowPrivilegeEscalation().isPresent() || readOnlyRootFilesystem().isPresent();
     }
 
     interface SeLinuxOptions {
@@ -126,6 +141,6 @@ public interface SecurityContextConfig {
          * It indicates that volume's ownership and permissions should always be changed whenever volume is mounted inside a
          * Pod. This the default behavior.
          */
-        Always;
+        Always
     }
 }
